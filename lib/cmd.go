@@ -10,8 +10,8 @@ import (
 	"golang.org/x/tools/go/ssa/ssautil"
 )
 
-func ReadDependencies(mainPkgName string) error {
-	pkgs, err := loadPkgs(mainPkgName)
+func ReadDependencies(mainPkgName string, dir string) error {
+	pkgs, err := loadPkgs(mainPkgName, dir)
 	if err != nil {
 		return err
 	}
@@ -50,21 +50,22 @@ func ReadDependencies(mainPkgName string) error {
 	return nil
 }
 
-var cfg = &packages.Config{
-	Mode: packages.NeedDeps |
-		packages.NeedSyntax |
-		packages.NeedTypesInfo |
-		packages.NeedTypes |
-		packages.NeedTypesSizes |
-		packages.NeedImports |
-		packages.NeedName |
-		packages.NeedFiles |
-		packages.NeedCompiledGoFiles,
-	Tests: false,
-}
+func loadPkgs(mainPkgName string, dir string) ([]*packages.Package, error) {
+	cfg := &packages.Config{
+		Mode: packages.NeedDeps |
+			packages.NeedSyntax |
+			packages.NeedTypesInfo |
+			packages.NeedTypes |
+			packages.NeedTypesSizes |
+			packages.NeedImports |
+			packages.NeedName |
+			packages.NeedFiles |
+			packages.NeedCompiledGoFiles,
+		Tests: false,
+		Dir:   dir,
+	}
 
-func loadPkgs(mainPkgName string) ([]*packages.Package, error) {
-	pkgs, err := packages.Load(cfg, mainPkgName)
+	pkgs, err := packages.Load(cfg, fmt.Sprintf("%s/...", mainPkgName))
 	if err != nil {
 		return nil, err
 	} else if packages.PrintErrors(pkgs) > 0 {

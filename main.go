@@ -9,27 +9,29 @@ import (
 )
 
 func main() {
-	mainPkgName, err := getMainPkgName()
+	mainPkgName, dir, err := getMainPkgName()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	if err := lib.ReadDependencies(mainPkgName); err != nil {
+	if err := lib.ReadDependencies(mainPkgName, dir); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func getMainPkgName() (string, error) {
+func getMainPkgName() (string, string, error) {
 	mainPkgName := ""
+	dir := ""
 
 	flag.StringVar(&mainPkgName, "main", "", "Main package name")
+	flag.StringVar(&dir, "dir", ".", "Directory to search for go files")
 	flag.Parse()
 
 	if mainPkgName == "" {
-		return "", fmt.Errorf("Please specify main package name")
+		return "", "", fmt.Errorf("Please specify main package name")
 	}
 
-	return mainPkgName, nil
+	return mainPkgName, dir, nil
 }
